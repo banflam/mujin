@@ -1,0 +1,50 @@
+name: CI & Deploy Docs
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install raml2html weasyprint
+
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          pytest --cov=app --cov-report=term
+
+      - name: Generate HTML Docs
+        run: |
+          source venv/bin/activate
+          raml2html -i api.raml -o api_docs.html
+
+      - name: Convert HTML to PDF
+        run: |
+          source venv/bin/activate
+          python convert.py
+
+      - name: Deploy to GitHub Pages
+        if: success()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
+          keep_files: true
+          force_orphan: true
