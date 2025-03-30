@@ -37,19 +37,21 @@ jobs:
 
       - name: Generate HTML Docs
         run: |
-          raml2html -i api.raml -o api_docs.html
+          mkdir -p docs
+          raml2html -i api.raml -o docs/api_docs.html
 
       - name: Convert HTML to PDF
         run: |
           source venv/bin/activate
           python convert.py
 
+      - name: List docs folder contents
+        run: ls -la docs
+
       - name: Deploy to GitHub Pages
-        if: success()
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+          publish_dir: ./docs
           publish_branch: gh-pages
-          keep_files: true
           force_orphan: true
