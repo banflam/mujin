@@ -1,0 +1,203 @@
+#%RAML 1.0
+title: Robot API
+version: v1
+baseUri: /api
+mediaType: application/json
+
+types:
+  Link:
+    type: object
+    properties:
+      id: string
+      parentLinkId?: string | nil
+      name: string
+      transform:
+	      type: array
+	      items: number
+	      minItems: 7
+	      maxItems: 7
+      geometries: Geometry[]
+  Joint:
+    type: object
+    properties:
+      id: string
+      name: string
+      parentLinkId: string
+      childLinkId: string
+      anchor:
+	      type: array
+	      items: number
+	      minItems: 3
+	      maxItems: 3
+      axis:
+	      type: array
+	      items: number
+	      minItems: 3
+	      maxItems: 3
+  Geometry:
+    type: object
+    properties:
+      id: string
+      name: string
+      type: 
+      	type: string
+	enum: [box] # only allowed value is "box"
+      extents:
+	      type: array
+	      items: number
+	      minItems: 3
+	      maxItems: 3
+      transform:
+	      type: array
+	      items: number
+	      minItems: 7
+	      maxItems: 7
+      	
+  Robot:
+    type: object
+    properties:
+      id: string
+      name: string
+      links: Link[]
+      joints: Joint[]
+
+/robot:
+  get:
+    description: List all robots
+    responses:
+      200:
+        body:
+          application/json:
+            type: Robot[]
+  post:
+    description: Create a new robot (automatically creates a base link and unique id)
+    responses:
+      201:
+        body:
+          application/json:
+            type: Robot
+  /{robotid}:
+    uriParameters:
+      robotid:
+        type: string
+    get:
+      description: Get properties of a robot
+      responses:
+        200:
+          body:
+            application/json:
+              type: Robot
+    put:
+      description: Modify properties of a robot
+      responses:
+        202:
+          body:
+            application/json:
+              type: Robot
+    delete:
+      description: Delete a robot
+      responses:
+        204:
+          body: {}
+    /joint:
+      get:
+        description: List all joints for the robot
+        responses:
+          200:
+            body:
+              application/json:
+                type: Joint[]
+      /{jointid}:
+        uriParameters:
+          jointid:
+            type: string
+        get:
+          description: Get joint details
+          responses:
+            200:
+              body:
+                application/json:
+                  type: Joint
+        put:
+          description: Modify joint properties
+          responses:
+            202:
+              body:
+                application/json:
+                  type: Joint
+    /link:
+      get:
+        description: List all links for the robot
+        responses:
+          200:
+            body:
+              application/json:
+                type: Link[]
+      post:
+        description: Create a new link (requires parentLinkId and automatically creates a joint)
+        responses:
+          201:
+            body:
+              application/json:
+                type: Link
+      /{linkid}:
+        uriParameters:
+          linkid:
+            type: string
+        get:
+          description: Get link details
+          responses:
+            200:
+              body:
+                application/json:
+                  type: Link
+        put:
+          description: Modify link properties
+          responses:
+            202:
+              body:
+                application/json:
+                  type: Link
+        delete:
+          description: Delete a link (cannot delete base link and deletes associated joint)
+          responses:
+            204:
+              body: {}
+        /geometry:
+          get:
+            description: List all geometries in the link
+            responses:
+              200:
+                body:
+                  application/json:
+                    type: Geometry[]
+          post:
+            description: Create a new geometry in the link
+            responses:
+              201:
+                body:
+                  application/json:
+                    type: Geometry
+          /{geometryid}:
+            uriParameters:
+              geometryid:
+                type: string
+            get:
+              description: Get geometry details
+              responses:
+                200:
+                  body:
+                    application/json:
+                      type: Geometry
+            put:
+              description: Modify geometry properties
+              responses:
+                202:
+                  body:
+                    application/json:
+                      type: Geometry
+            delete:
+              description: Delete a geometry
+              responses:
+                204:
+                  body: {}
